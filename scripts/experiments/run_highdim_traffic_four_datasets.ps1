@@ -17,9 +17,9 @@ $projectRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
 $python = if ($env:PYTHON) { $env:PYTHON } else { "python" }
 
 $allModels = @(
-    "NLinear", "RLinear", "GRU", "TCN", "CycleNet", "PatchTST",
+    "NLinear", "RLinear", "GRU", "GRU_CI", "GRU_CD", "TCN", "CycleNet", "PatchTST",
     "TSMixer", "XLinear", "Amplifier", "SegRNN", "iTransformer",
-    "NLinear_Snow", "RLinear_Snow", "GRU_Snow", "TCN_Snow",
+    "NLinear_Snow", "RLinear_Snow", "GRU_Snow", "GRU_CI_Snow", "GRU_CD_Snow", "TCN_Snow",
     "CycleNet_Snow", "PatchTST_Snow", "TSMixer_Snow", "XLinear_Snow",
     "Amplifier_Snow", "SegRNN_Snow", "iTransformer_Snow",
     "iTransformer_Snow_Attn1", "iTransformer_Snow_AllAttn"

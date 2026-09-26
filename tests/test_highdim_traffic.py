@@ -28,6 +28,8 @@ MODELS = {
     "NLinear": "NLinear",
     "RLinear": "RLinear",
     "GRU": "GRU",
+    "GRU_CI": "GRU_CI",
+    "GRU_CD": "GRU_CD",
     "TCN": "TCN",
     "CycleNet": "cyclenet",
     "PatchTST": "PatchTST",
@@ -39,6 +41,8 @@ MODELS = {
     "NLinear_Snow": "NLinear_Snow",
     "RLinear_Snow": "RLinear_Snow",
     "GRU_Snow": "GRU_Snow",
+    "GRU_CI_Snow": "GRU_CI_Snow",
+    "GRU_CD_Snow": "GRU_CD_Snow",
     "TCN_Snow": "TCN_Snow",
     "CycleNet_Snow": "CycleNet_Snow",
     "PatchTST_Snow": "PatchTST_Snow",
@@ -298,7 +302,7 @@ def test_source_shapes_and_metadata_rows_without_loading_arrays():
         assert rows == EXPECTED_SHAPES[dataset][1]
 
 
-def test_experiment_scripts_define_192_jobs_without_standalone_snownet():
+def test_experiment_scripts_define_224_jobs_without_standalone_snownet():
     powershell = (
         PROJECT_ROOT / "scripts" / "experiments" / "run_highdim_traffic_four_datasets.ps1"
     ).read_text(encoding="utf-8")
@@ -306,12 +310,12 @@ def test_experiment_scripts_define_192_jobs_without_standalone_snownet():
         PROJECT_ROOT / "scripts" / "experiments" / "run_highdim_traffic_four_datasets.sh"
     ).read_text(encoding="utf-8")
 
-    assert len(MODELS) == 24
+    assert len(MODELS) == 28
     assert "SnowNet" not in MODELS
     for model in MODELS:
         assert re.search(rf'(?<![A-Za-z0-9_]){re.escape(model)}(?![A-Za-z0-9_])', powershell)
         assert re.search(rf'(?<![A-Za-z0-9_]){re.escape(model)}(?![A-Za-z0-9_])', bash)
-    assert len(DATASETS) * 2 * len(MODELS) == 192
+    assert len(DATASETS) * 2 * len(MODELS) == 224
 
 
 def test_all_dataset_linux_entrypoint_defaults_to_four_datasets():

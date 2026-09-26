@@ -16,6 +16,8 @@ BASE_MODELS = [
     ("NLinear", "NLinear"),
     ("RLinear", "RLinear"),
     ("GRU", "GRU"),
+    ("GRU_CI", "GRU_CI"),
+    ("GRU_CD", "GRU_CD"),
     ("TCN", "TCN"),
     ("CycleNet", "cyclenet"),
     ("PatchTST", "PatchTST"),
@@ -30,6 +32,8 @@ SNOW_MODELS = {
     "NLinear_Snow": [16, 8],
     "RLinear_Snow": [16, 8],
     "GRU_Snow": [16, 8],
+    "GRU_CI_Snow": [16, 8],
+    "GRU_CD_Snow": [16, 8],
     "TCN_Snow": [16],
     "CycleNet_Snow": [16, 8],
     "PatchTST_Snow": [8],
@@ -288,6 +292,12 @@ def test_registry_exposes_gru_cd_alias():
     registry = RegistryProbe(SimpleNamespace(use_gpu=False)).model_dict
     assert registry["GRU-CD"] is registry["GRU"]
     assert registry["GRU_CD"] is registry["GRU"]
+    assert registry["GRU-CI"] is registry["GRU_CI"]
+    assert registry["GRU-CI"] is not registry["GRU"]
+    assert registry["GRU-CD-Snow"] is registry["GRU_Snow"]
+    assert registry["GRU_CD_Snow"] is registry["GRU_Snow"]
+    assert registry["GRU-CI-Snow"] is registry["GRU_CI_Snow"]
+    assert registry["GRU-CI-Snow"] is not registry["GRU_Snow"]
 
 
 def test_registry_contains_only_current_snow_model_names():

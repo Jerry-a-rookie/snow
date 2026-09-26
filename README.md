@@ -90,6 +90,12 @@ bash scripts/long_term_forecast/Traffic_script/SnowNet.sh
 Additional standard datasets are available under
 `scripts/long_term_forecast/` (ETTh2, ETTm1, ETTm2, Solar, Weather, and PEMS).
 
+The GRU baselines are exposed in both channel modes: `GRU_CI` processes each
+channel with shared univariate recurrent parameters, while `GRU_CD` receives
+the full multivariate input. Their Snow-enhanced counterparts are
+`GRU_CI_Snow` and `GRU_CD_Snow`. The legacy names `GRU` and `GRU_Snow` remain
+available as aliases for the channel-dependent variants.
+
 ### High-dimensional traffic forecasting
 
 The main traffic runner covers the four high-dimensional traffic datasets CA,

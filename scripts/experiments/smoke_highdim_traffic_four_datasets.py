@@ -31,6 +31,10 @@ DATASET_CHANNELS = {
 MODEL_MODULES = {
     "NLinear": "NLinear",
     "GRU": "GRU",
+    "GRU_CI": "GRU_CI",
+    "GRU_CD": "GRU_CD",
+    "GRU_CI_Snow": "GRU_CI_Snow",
+    "GRU_CD_Snow": "GRU_CD_Snow",
     "PatchTST": "PatchTST",
     "SegRNN": "SegRNN",
 }
