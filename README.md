@@ -14,20 +14,7 @@
 
 <p align="center"><sub>Example appendix analysis on PEMS-BAY: signed routing, Snow interaction, and correlation structure.</sub></p>
 
-## At a glance
 
-Snow is a forecasting architecture designed to model signed cross-channel
-interactions while retaining a simple long-term forecasting interface. This
-repository contains the model variants used in the paper, their baseline
-counterparts, the main experiment launchers, and lightweight verification
-tests.
-
-| Included | Not included |
-| --- | --- |
-| Snow and baseline model implementations | Datasets and dataset downloads |
-| Standard long-term forecasting runners | Checkpoints and generated results |
-| High-dimensional traffic experiment runners | Manuscript sources and review material |
-| Data-preparation and smoke-test utilities | Author, server, and repository metadata |
 
 ## Visual overview
 
