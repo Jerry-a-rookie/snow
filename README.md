@@ -4,7 +4,7 @@
 
 **A compact, reproducible code release for Snow and its forecasting baselines**
 
-<sub>Anonymous release · PyTorch · long-term forecasting · PatchSTG traffic settings</sub>
+<sub>Anonymous release · PyTorch · long-term forecasting · high-dimensional traffic forecasting</sub>
 
 </div>
 
@@ -26,7 +26,7 @@ tests.
 | --- | --- |
 | Snow and baseline model implementations | Datasets and dataset downloads |
 | Standard long-term forecasting runners | Checkpoints and generated results |
-| PatchSTG four-dataset runners | Manuscript sources and review material |
+| High-dimensional traffic experiment runners | Manuscript sources and review material |
 | Data-preparation and smoke-test utilities | Author, server, and repository metadata |
 
 ## Visual overview
@@ -50,8 +50,8 @@ layers/                        Shared neural-network layers
 data_provider/                 Dataset readers and preprocessing
 exp/                           Training and evaluation loops
 configs/                       Non-sensitive experiment configuration
-scripts/data/                  PatchSTG data preparation helper
-scripts/experiments/           Main PatchSTG traffic runners
+scripts/data/                  High-dimensional traffic data preparation
+scripts/experiments/           Main high-dimensional traffic runners
 scripts/long_term_forecast/    Main dataset-specific forecasting runners
 tests/                         Lightweight model and runner tests
 assets/figures/                Appendix figures shown in this README
@@ -76,7 +76,7 @@ temporary files outside the source tree or in ignored directories.
 
 ## Main experiment entry points
 
-### Standard long-term forecasting
+### Standard forecasting
 
 The dataset-specific wrappers share one interface and use the 96-step input
 setting from the paper. For example:
@@ -90,10 +90,12 @@ bash scripts/long_term_forecast/Traffic_script/SnowNet.sh
 Additional standard datasets are available under
 `scripts/long_term_forecast/` (ETTh2, ETTm1, ETTm2, Solar, Weather, and PEMS).
 
-### PatchSTG traffic settings
+### High-dimensional traffic forecasting
 
-The main traffic runner covers CA, GBA, GLA, and SD with the 6-to-6 and
-12-to-12 settings:
+The main traffic runner covers the four high-dimensional traffic datasets CA,
+GBA, GLA, and SD with the 6-to-6 and 12-to-12 settings. PatchSTG is not a
+dataset category here; the user-facing experiment groups are the four named
+datasets and the forecasting models selected by `MODELS`.
 
 ```bash
 bash scripts/experiments/run_patchstg_all_datasets.sh
@@ -106,8 +108,10 @@ DRY_RUN=1 DATASETS="CA GBA" MODELS="SnowNet PatchTST_Snow" \
   bash scripts/experiments/run_patchstg_all_datasets.sh
 ```
 
-If the raw PatchSTG files are available, the runner can prepare the converted
-dataset layout using `scripts/data/prepare_patchstg.py`.
+The data-preparation helper converts the raw traffic files into the
+memory-mapped layout expected by the repository's traffic loader. Its filename
+retains `patchstg` for compatibility with the reference data format and
+loader, but it does not define a separate traffic setting.
 
 ## Verification
 
@@ -117,8 +121,9 @@ Run the lightweight model and runner checks before launching experiments:
 python -B -m pytest -q
 ```
 
-Most unit tests use synthetic inputs. The PatchSTG smoke runner expects
-converted traffic files under `dataset/PatchSTG` and can be launched with:
+Most unit tests use synthetic inputs. The high-dimensional traffic smoke runner
+expects converted traffic files under the internal `dataset/PatchSTG` loader
+directory and can be launched with:
 
 ```bash
 SMOKE_TEST=1 bash scripts/experiments/run_patchstg_all_datasets.sh
