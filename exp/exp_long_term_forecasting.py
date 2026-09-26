@@ -115,8 +115,8 @@ class Exp_Long_Term_Forecast(Exp_Basic):
         return path
 
     @staticmethod
-    def _is_patchstg(data_set):
-        return bool(getattr(data_set, 'is_patchstg', False))
+    def _is_highdim_traffic(data_set):
+        return bool(getattr(data_set, 'is_highdim_traffic', False))
 
     @staticmethod
     def _masked_mae(predictions, targets):
@@ -126,7 +126,7 @@ class Exp_Long_Term_Forecast(Exp_Basic):
         return torch.abs(predictions[mask] - targets[mask]).mean()
 
     def _forecast_loss(self, outputs, targets, data_set, criterion):
-        if self._is_patchstg(data_set):
+        if self._is_highdim_traffic(data_set):
             outputs = data_set.inverse_transform(outputs)
             return self._masked_mae(outputs, targets)
         return criterion(outputs, targets)
@@ -297,7 +297,7 @@ class Exp_Long_Term_Forecast(Exp_Basic):
                 f_dim = -1 if self.args.features == 'MS' else 0
                 outputs = outputs[:, -self.args.pred_len:, f_dim:]
                 batch_y = batch_y[:, -self.args.pred_len:, f_dim:].to(self.device)
-                if self._is_patchstg(vali_data):
+                if self._is_highdim_traffic(vali_data):
                     outputs = vali_data.inverse_transform(outputs)
                     mask = batch_y.ne(0) & torch.isfinite(batch_y)
                     total_loss.sum += torch.abs(outputs[mask] - batch_y[mask]).sum().item()
@@ -305,9 +305,9 @@ class Exp_Long_Term_Forecast(Exp_Basic):
                 else:
                     loss = criterion(outputs, batch_y)
                     total_loss.update(loss.item(), batch_x.size(0))
-        if self._is_patchstg(vali_data):
+        if self._is_highdim_traffic(vali_data):
             if total_loss.count == 0:
-                raise ValueError('PatchSTG validation split contains no nonzero finite labels')
+                raise ValueError('HighDimTraffic validation split contains no nonzero finite labels')
             total_loss = total_loss.sum / total_loss.count
         else:
             total_loss = total_loss.avg
@@ -443,7 +443,7 @@ class Exp_Long_Term_Forecast(Exp_Basic):
         mae_loss = nn.L1Loss()
         mse = AverageMeter()
         mae = AverageMeter()
-        patchstg_sums = {
+        traffic_sums = {
             'count': 0,
             'abs_error': 0.0,
             'squared_error': 0.0,
@@ -484,30 +484,30 @@ class Exp_Long_Term_Forecast(Exp_Basic):
                 outputs = outputs[:, -self.args.pred_len:, f_dim:]
                 batch_y = batch_y[:, -self.args.pred_len:, f_dim:].to(self.device)
 
-                if self._is_patchstg(test_data):
+                if self._is_highdim_traffic(test_data):
                     outputs = test_data.inverse_transform(outputs)
                     mask = batch_y.ne(0) & torch.isfinite(batch_y)
                     errors = outputs[mask] - batch_y[mask]
                     valid_targets = batch_y[mask]
-                    patchstg_sums['count'] += int(mask.sum().item())
-                    patchstg_sums['abs_error'] += torch.abs(errors).sum().item()
-                    patchstg_sums['squared_error'] += torch.square(errors).sum().item()
-                    patchstg_sums['absolute_percentage_error'] += (
+                    traffic_sums['count'] += int(mask.sum().item())
+                    traffic_sums['abs_error'] += torch.abs(errors).sum().item()
+                    traffic_sums['squared_error'] += torch.square(errors).sum().item()
+                    traffic_sums['absolute_percentage_error'] += (
                         torch.abs(errors / valid_targets).sum().item()
                     )
                 else:
                     mse.update(mse_loss(outputs, batch_y).item(), batch_x.size(0))
                     mae.update(mae_loss(outputs, batch_y).item(), batch_x.size(0))
 
-        if self._is_patchstg(test_data):
-            count = patchstg_sums['count']
+        if self._is_highdim_traffic(test_data):
+            count = traffic_sums['count']
             if count == 0:
                 mse = mae = rmse = mape = float('nan')
             else:
-                mse = patchstg_sums['squared_error'] / count
-                mae = patchstg_sums['abs_error'] / count
+                mse = traffic_sums['squared_error'] / count
+                mae = traffic_sums['abs_error'] / count
                 rmse = float(np.sqrt(mse))
-                mape = patchstg_sums['absolute_percentage_error'] / count
+                mape = traffic_sums['absolute_percentage_error'] / count
             metric_space = 'original_masked_nonzero'
         else:
             mse = mse.avg

@@ -93,25 +93,24 @@ Additional standard datasets are available under
 ### High-dimensional traffic forecasting
 
 The main traffic runner covers the four high-dimensional traffic datasets CA,
-GBA, GLA, and SD with the 6-to-6 and 12-to-12 settings. PatchSTG is not a
-dataset category here; the user-facing experiment groups are the four named
-datasets and the forecasting models selected by `MODELS`.
+GBA, GLA, and SD with the 6-to-6 and 12-to-12 settings. The user-facing
+experiment groups are the four named datasets and the forecasting models
+selected by `MODELS`.
 
 ```bash
-bash scripts/experiments/run_patchstg_all_datasets.sh
+bash scripts/experiments/run_highdim_traffic_all_datasets.sh
 ```
 
 Useful controls are exposed as environment variables, for example:
 
 ```bash
 DRY_RUN=1 DATASETS="CA GBA" MODELS="SnowNet PatchTST_Snow" \
-  bash scripts/experiments/run_patchstg_all_datasets.sh
+  bash scripts/experiments/run_highdim_traffic_all_datasets.sh
 ```
 
 The data-preparation helper converts the raw traffic files into the
-memory-mapped layout expected by the repository's traffic loader. Its filename
-retains `patchstg` for compatibility with the reference data format and
-loader, but it does not define a separate traffic setting.
+memory-mapped layout expected by the repository's traffic loader. The helper
+and runner use neutral high-dimensional traffic names throughout.
 
 ## Verification
 
@@ -122,11 +121,11 @@ python -B -m pytest -q
 ```
 
 Most unit tests use synthetic inputs. The high-dimensional traffic smoke runner
-expects converted traffic files under the internal `dataset/PatchSTG` loader
-directory and can be launched with:
+expects converted traffic files under the internal `dataset/highdim_traffic`
+loader directory and can be launched with:
 
 ```bash
-SMOKE_TEST=1 bash scripts/experiments/run_patchstg_all_datasets.sh
+SMOKE_TEST=1 bash scripts/experiments/run_highdim_traffic_all_datasets.sh
 ```
 
 ## Anonymous-release checklist

@@ -4,7 +4,7 @@ import hashlib
 
 import numpy as np
 from data_provider.data_loader import Dataset_ETT_hour, Dataset_ETT_minute, Dataset_Custom, Dataset_LongForecast, \
-    Dataset_Solar, Dataset_PEMS, Dataset_PatchSTG, Dataset_Pred, Dataset_Random
+    Dataset_Solar, Dataset_PEMS, Dataset_HighDimTraffic, Dataset_Pred, Dataset_Random
 from torch.utils.data import DataLoader, Dataset
 
 data_dict = {
@@ -19,7 +19,7 @@ data_dict = {
     'random': Dataset_Random,
     'Solar': Dataset_Solar,
     'PEMS': Dataset_PEMS,
-    'PatchSTG': Dataset_PatchSTG,
+    'HighDimTraffic': Dataset_HighDimTraffic,
 }
 
 
@@ -234,9 +234,9 @@ def data_provider(args, flag):
     noise_type = getattr(args, 'train_noise_type', 'none')
     noise_ratio = float(getattr(args, 'train_noise_channel_ratio', 0.0))
     if flag == 'train' and noise_type != 'none' and noise_ratio > 0.0:
-        if getattr(data_set, 'is_patchstg', False):
+        if getattr(data_set, 'is_highdim_traffic', False):
             raise ValueError(
-                'training channel noise is disabled for memory-mapped PatchSTG datasets'
+                'training channel noise is disabled for memory-mapped high-dimensional traffic datasets'
             )
         if noise_type != 'gaussian':
             raise ValueError(f'unsupported train noise type: {noise_type}')

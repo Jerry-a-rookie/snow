@@ -8,12 +8,12 @@ cd "${PROJECT_ROOT}"
 PYTHON_BIN="${PYTHON:-python3}"
 DRY_RUN="${DRY_RUN:-0}"
 RESUME="${RESUME:-0}"
-PATCHSTG_ROOT="${PATCHSTG_ROOT:-${PROJECT_ROOT}/dataset/PatchSTG}"
-# PATCHSTG_ROOT is the converted-data root.  When the raw PatchSTG NPZ files
+TRAFFIC_ROOT="${TRAFFIC_ROOT:-${PROJECT_ROOT}/dataset/highdim_traffic}"
+# TRAFFIC_ROOT is the converted-data root.  When the raw traffic NPZ files
 # are stored there as flowca.npz/flowgba.npz/flowgla.npz/flowsd.npz, the
 # missing converted dataset directories are prepared automatically below.
-PATCHSTG_SOURCE_ROOT="${PATCHSTG_SOURCE_ROOT:-${PATCHSTG_ROOT}}"
-RESULT_DIR="${RESULT_DIR:-${PROJECT_ROOT}/results/patchstg_four_datasets}"
+TRAFFIC_SOURCE_ROOT="${TRAFFIC_SOURCE_ROOT:-${TRAFFIC_ROOT}}"
+RESULT_DIR="${RESULT_DIR:-${PROJECT_ROOT}/results/highdim_traffic_four_datasets}"
 SEED="${SEED:-2021}"
 TRAIN_EPOCHS="${TRAIN_EPOCHS:-20}"
 PATIENCE="${PATIENCE:-3}"
@@ -96,7 +96,7 @@ if [[ "${DRY_RUN}" != "1" ]]; then
     for dataset in "${SELECTED_DATASETS[@]}"; do
         converted_ready=1
         for file in flow.npy meta.csv manifest.json; do
-            [[ -f "${PATCHSTG_ROOT}/${dataset}/${file}" ]] || converted_ready=0
+            [[ -f "${TRAFFIC_ROOT}/${dataset}/${file}" ]] || converted_ready=0
         done
 
         if (( converted_ready == 0 )); then
@@ -106,29 +106,29 @@ if [[ "${DRY_RUN}" != "1" ]]; then
                 GLA) raw_name="flowgla.npz"; meta_name="GLA/gla_meta.csv" ;;
                 SD) raw_name="flowsd.npz"; meta_name="SD/sd_meta.csv" ;;
             esac
-            raw_path="${PATCHSTG_SOURCE_ROOT}/${raw_name}"
-            meta_path="${PATCHSTG_SOURCE_ROOT}/${meta_name}"
+            raw_path="${TRAFFIC_SOURCE_ROOT}/${raw_name}"
+            meta_path="${TRAFFIC_SOURCE_ROOT}/${meta_name}"
             if [[ -f "${raw_path}" && -f "${meta_path}" ]]; then
-                prepare_script="${PROJECT_ROOT}/scripts/data/prepare_patchstg.py"
+                prepare_script="${PROJECT_ROOT}/scripts/data/prepare_highdim_traffic.py"
                 [[ -f "${prepare_script}" ]] || {
-                    echo "PatchSTG converter not found: ${prepare_script}" >&2
+                    echo "High-dimensional traffic converter not found: ${prepare_script}" >&2
                     exit 1
                 }
-                echo "Preparing ${dataset}: ${raw_path} -> ${PATCHSTG_ROOT}/${dataset}"
+                echo "Preparing ${dataset}: ${raw_path} -> ${TRAFFIC_ROOT}/${dataset}"
                 "${PYTHON_BIN}" "${prepare_script}" \
-                    --source-root "${PATCHSTG_SOURCE_ROOT}" \
-                    --output-root "${PATCHSTG_ROOT}" \
+                    --source-root "${TRAFFIC_SOURCE_ROOT}" \
+                    --output-root "${TRAFFIC_ROOT}" \
                     --datasets "${dataset}" \
                     --overwrite
             else
-                echo "Missing PatchSTG data for ${dataset}. Expected either converted files under ${PATCHSTG_ROOT}/${dataset}/ or raw files ${raw_path} and ${meta_path}." >&2
+                echo "Missing high-dimensional traffic data for ${dataset}. Expected either converted files under ${TRAFFIC_ROOT}/${dataset}/ or raw files ${raw_path} and ${meta_path}." >&2
                 exit 1
             fi
         fi
 
         for file in flow.npy meta.csv manifest.json; do
-            [[ -f "${PATCHSTG_ROOT}/${dataset}/${file}" ]] || {
-                echo "Missing converted dataset file after preparation: ${PATCHSTG_ROOT}/${dataset}/${file}" >&2
+            [[ -f "${TRAFFIC_ROOT}/${dataset}/${file}" ]] || {
+                echo "Missing converted dataset file after preparation: ${TRAFFIC_ROOT}/${dataset}/${file}" >&2
                 exit 1
             }
         done
@@ -171,7 +171,7 @@ selected_count=0
 for ((i=0; i<full_count; i++)); do
     (( i % SHARD_COUNT == SHARD_INDEX )) && selected_count=$((selected_count + 1))
 done
-echo "PatchSTG jobs: ${selected_count} selected / ${full_count} total"
+echo "High-dimensional traffic jobs: ${selected_count} selected / ${full_count} total"
 echo "Models: ${#SELECTED_MODELS[@]}; datasets: ${SELECTED_DATASETS[*]}; windows: ${SELECTED_WINDOWS[*]}"
 echo "Shard: ${SHARD_INDEX}/${SHARD_COUNT}; GPU: ${GPU}; manifest: ${MANIFEST_PATH}"
 
@@ -202,9 +202,9 @@ for dataset in "${SELECTED_DATASETS[@]}"; do
                 --model_id "${model_id}"
                 --model "${model}"
                 --seed "${SEED}"
-                --data PatchSTG
+                --data HighDimTraffic
                 --result_data "${dataset}"
-                --root_path "${PATCHSTG_ROOT}/${dataset}"
+                --root_path "${TRAFFIC_ROOT}/${dataset}"
                 --data_path flow.npy
                 --features M
                 --freq 15min
@@ -237,7 +237,7 @@ for dataset in "${SELECTED_DATASETS[@]}"; do
                 --itr 1
                 --gpu "${GPU}"
                 --use_amp
-                --des PatchSTGFourDatasets
+                --des HighDimTrafficFourDatasets
                 --result_path "${RESULT_PATH}"
                 --checkpoints "${RESULT_DIR}/checkpoints"
             )
@@ -268,5 +268,5 @@ done
 if [[ "${DRY_RUN}" == "1" ]]; then
     echo "Dry-run complete. No training was started."
 else
-    echo "Selected PatchSTG experiments complete."
+    echo "Selected high-dimensional traffic experiments complete."
 fi

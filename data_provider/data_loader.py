@@ -569,28 +569,28 @@ class Dataset_PEMS(Dataset):
         return self.scaler.inverse_transform(data)
 
 
-class Dataset_PatchSTG(Dataset):
-    """Memory-mapped PatchSTG traffic data with raw targets."""
+class Dataset_HighDimTraffic(Dataset):
+    """Memory-mapped high-dimensional traffic data with raw targets."""
 
-    is_patchstg = True
+    is_highdim_traffic = True
 
     def __init__(self, root_path, flag='train', size=None,
                  features='M', data_path='flow.npy',
                  target='OT', scale=True, timeenc=0, freq='15min', **kwargs):
         if size is None or len(size) < 4:
-            raise ValueError('PatchSTG requires [seq_len, label_len, pred_len, enc_in]')
+            raise ValueError('HighDimTraffic requires [seq_len, label_len, pred_len, enc_in]')
         self.seq_len = int(size[0])
         self.label_len = int(size[1])
         self.pred_len = int(size[2])
         expected_channels = [int(value) for value in size[3:6]]
         if self.label_len != 0:
-            raise ValueError('PatchSTG requires label_len=0 for immediate forecasting')
+            raise ValueError('HighDimTraffic requires label_len=0 for immediate forecasting')
         if features != 'M':
-            raise ValueError("PatchSTG supports only multivariate features='M'")
+            raise ValueError("HighDimTraffic supports only multivariate features='M'")
         if not scale:
-            raise ValueError('PatchSTG inputs must use training-set standardization')
+            raise ValueError('HighDimTraffic inputs must use training-set standardization')
         if flag not in ('train', 'val', 'test'):
-            raise ValueError(f'Unsupported PatchSTG split: {flag}')
+            raise ValueError(f'Unsupported HighDimTraffic split: {flag}')
 
         self.flag = flag
         self.root_path = os.path.abspath(root_path)
@@ -602,17 +602,17 @@ class Dataset_PatchSTG(Dataset):
 
         shape = tuple(self.manifest['flow_shape'])
         if len(shape) != 2:
-            raise ValueError(f'PatchSTG flow_shape must be [time, nodes], got {shape}')
+            raise ValueError(f'HighDimTraffic flow_shape must be [time, nodes], got {shape}')
         if any(value != shape[1] for value in expected_channels):
             raise ValueError(
-                'PatchSTG node count must match enc_in/dec_in/c_out: '
+                'HighDimTraffic node count must match enc_in/dec_in/c_out: '
                 f"dataset={shape[1]}, configured={expected_channels}"
             )
         self.time_steps, self.n_nodes = shape
         self.mean = float(self.manifest['train_mean'])
         self.std = float(self.manifest['train_std'])
         if not np.isfinite(self.std) or self.std <= 0:
-            raise ValueError(f'Invalid PatchSTG train_std: {self.std}')
+            raise ValueError(f'Invalid HighDimTraffic train_std: {self.std}')
         self.tod = int(self.manifest['time_encoding']['tod'])
         self.dow = int(self.manifest['time_encoding']['dow'])
 
@@ -626,7 +626,7 @@ class Dataset_PatchSTG(Dataset):
         }
         self.border1, self.border2 = borders[flag]
         if self.border1 < 0 or self.border2 > self.time_steps:
-            raise ValueError(f'Invalid PatchSTG split borders: {borders[flag]}')
+            raise ValueError(f'Invalid HighDimTraffic split borders: {borders[flag]}')
         self._flow = None
         flow = self._get_flow()
         if tuple(flow.shape) != shape or flow.dtype != np.dtype('float32'):

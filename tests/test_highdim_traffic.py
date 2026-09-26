@@ -11,13 +11,13 @@ import pytest
 import torch
 from torch.utils.data import DataLoader
 
-from data_provider.data_loader import Dataset_PatchSTG
+from data_provider.data_loader import Dataset_HighDimTraffic
 from exp.exp_long_term_forecasting import Exp_Long_Term_Forecast
-from scripts.data.prepare_patchstg import DATASETS, convert_dataset, inspect_npz
+from scripts.data.prepare_highdim_traffic import DATASETS, convert_dataset, inspect_npz
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-PATCHSTG_SOURCE = PROJECT_ROOT / "PatchSTG-main" / "data"
+TRAFFIC_SOURCE = PROJECT_ROOT / "traffic_reference" / "data"
 EXPECTED_SHAPES = {
     "CA": (35040, 8600, 1),
     "GBA": (35040, 2352, 1),
@@ -145,9 +145,9 @@ def test_streaming_conversion_supports_fortran_order(tmp_path):
 def test_dataset_splits_normalization_targets_and_time_wrap(converted_dataset, window):
     values, output_path, manifest = converted_dataset
     size = [window, 0, window, values.shape[1], values.shape[1], values.shape[1]]
-    train = Dataset_PatchSTG(output_path, flag="train", size=size)
-    val = Dataset_PatchSTG(output_path, flag="val", size=size)
-    test = Dataset_PatchSTG(output_path, flag="test", size=size)
+    train = Dataset_HighDimTraffic(output_path, flag="train", size=size)
+    val = Dataset_HighDimTraffic(output_path, flag="val", size=size)
+    test = Dataset_HighDimTraffic(output_path, flag="test", size=size)
     train_end = manifest["split"]["train_end"]
     val_end = manifest["split"]["val_end"]
 
@@ -182,7 +182,7 @@ def test_dataset_splits_normalization_targets_and_time_wrap(converted_dataset, w
 def test_dataset_reopens_memmap_in_spawn_workers(converted_dataset):
     values, output_path, _ = converted_dataset
     channels = values.shape[1]
-    dataset = Dataset_PatchSTG(
+    dataset = Dataset_HighDimTraffic(
         output_path,
         flag="train",
         size=[6, 0, 6, channels, channels, channels],
@@ -201,10 +201,10 @@ def test_dataset_reopens_memmap_in_spawn_workers(converted_dataset):
     assert batch_y_mark.shape == (2, 6, 2)
 
 
-def test_patchstg_masked_loss_uses_original_units():
+def test_highdim_traffic_masked_loss_uses_original_units():
     experiment = Exp_Long_Term_Forecast.__new__(Exp_Long_Term_Forecast)
     data_set = SimpleNamespace(
-        is_patchstg=True,
+        is_highdim_traffic=True,
         inverse_transform=lambda value: value * 10.0 + 5.0,
     )
     predictions = torch.tensor([[[0.0, 1.0], [2.0, 3.0]]])
@@ -222,7 +222,7 @@ def test_patchstg_masked_loss_uses_original_units():
 def _model_config(window):
     return SimpleNamespace(
         task_name="long_term_forecast",
-        data="PatchSTG",
+        data="HighDimTraffic",
         seq_len=window,
         label_len=0,
         pred_len=window,
@@ -276,7 +276,7 @@ def _model_config(window):
 
 @pytest.mark.parametrize("window", [6, 12])
 @pytest.mark.parametrize("registry_name,module_name", MODELS.items())
-def test_all_patchstg_models_forward(registry_name, module_name, window):
+def test_all_highdim_traffic_models_forward(registry_name, module_name, window):
     model = importlib.import_module(f"models.{module_name}").Model(_model_config(window))
     inputs = torch.randn(1, window, 3)
     marks = torch.zeros(1, window, 2)
@@ -286,12 +286,12 @@ def test_all_patchstg_models_forward(registry_name, module_name, window):
 
 
 def test_source_shapes_and_metadata_rows_without_loading_arrays():
-    if not PATCHSTG_SOURCE.exists():
-        pytest.skip("raw PatchSTG source data is not included in the code release")
+    if not TRAFFIC_SOURCE.exists():
+        pytest.skip("raw high-dimensional traffic source data is not included in the code release")
     for dataset, (flow_name, meta_name) in DATASETS.items():
-        info = inspect_npz(PATCHSTG_SOURCE / flow_name)
+        info = inspect_npz(TRAFFIC_SOURCE / flow_name)
         assert info["shape"] == EXPECTED_SHAPES[dataset]
-        with (PATCHSTG_SOURCE / meta_name).open(
+        with (TRAFFIC_SOURCE / meta_name).open(
             "r", newline="", encoding="utf-8-sig"
         ) as handle:
             rows = sum(1 for _ in csv.reader(handle)) - 1
@@ -300,10 +300,10 @@ def test_source_shapes_and_metadata_rows_without_loading_arrays():
 
 def test_experiment_scripts_define_192_jobs_without_standalone_snownet():
     powershell = (
-        PROJECT_ROOT / "scripts" / "experiments" / "run_patchstg_four_datasets.ps1"
+        PROJECT_ROOT / "scripts" / "experiments" / "run_highdim_traffic_four_datasets.ps1"
     ).read_text(encoding="utf-8")
     bash = (
-        PROJECT_ROOT / "scripts" / "experiments" / "run_patchstg_four_datasets.sh"
+        PROJECT_ROOT / "scripts" / "experiments" / "run_highdim_traffic_four_datasets.sh"
     ).read_text(encoding="utf-8")
 
     assert len(MODELS) == 24
@@ -319,22 +319,22 @@ def test_all_dataset_linux_entrypoint_defaults_to_four_datasets():
         PROJECT_ROOT
         / "scripts"
         / "experiments"
-        / "run_patchstg_all_datasets.sh"
+        / "run_highdim_traffic_all_datasets.sh"
     ).read_text(encoding="utf-8")
     assert 'CA GBA GLA SD' in entrypoint
     assert "SMOKE_TEST" in entrypoint
-    assert "run_patchstg_four_datasets.sh" in entrypoint
-    assert "smoke_patchstg_four_datasets.py" in entrypoint
+    assert "run_highdim_traffic_four_datasets.sh" in entrypoint
+    assert "smoke_highdim_traffic_four_datasets.py" in entrypoint
 
 
 def test_converted_real_datasets_when_present():
-    converted_root = PROJECT_ROOT / "dataset" / "PatchSTG"
+    converted_root = PROJECT_ROOT / "dataset" / "highdim_traffic"
     if not converted_root.exists():
-        pytest.skip("real PatchSTG conversion has not been generated")
+        pytest.skip("real high-dimensional traffic conversion has not been generated")
     for dataset, expected_source_shape in EXPECTED_SHAPES.items():
         manifest_path = converted_root / dataset / "manifest.json"
         if not manifest_path.exists():
-            pytest.skip("real PatchSTG conversion is incomplete")
+            pytest.skip("real high-dimensional traffic conversion is incomplete")
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         flow = np.load(converted_root / dataset / "flow.npy", mmap_mode="r")
         assert flow.shape == expected_source_shape[:2]

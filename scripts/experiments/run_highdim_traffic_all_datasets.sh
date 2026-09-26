@@ -20,8 +20,8 @@ if [[ "${SMOKE_TEST:-0}" == "1" ]]; then
         smoke_args+=(--windows "${selected_windows[@]}")
     fi
     exec "${PYTHON:-python3}" \
-        "${SCRIPT_DIR}/smoke_patchstg_four_datasets.py" \
+        "${SCRIPT_DIR}/smoke_highdim_traffic_four_datasets.py" \
         "${smoke_args[@]}"
 fi
 
-exec bash "${SCRIPT_DIR}/run_patchstg_four_datasets.sh"
+exec bash "${SCRIPT_DIR}/run_highdim_traffic_four_datasets.sh"

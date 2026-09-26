@@ -96,7 +96,7 @@ if ($ShardCount -lt 1 -or $ShardIndex -lt 0 -or $ShardIndex -ge $ShardCount) {
     throw "ShardIndex must be in [0, ShardCount), received $ShardIndex/$ShardCount."
 }
 
-$datasetRootValue = Get-StringSetting "PATCHSTG_ROOT" (Join-Path $projectRoot "dataset\PatchSTG")
+$datasetRootValue = Get-StringSetting "TRAFFIC_ROOT" (Join-Path $projectRoot "dataset\highdim_traffic")
 $datasetRoot = if ([IO.Path]::IsPathRooted($datasetRootValue)) {
     $datasetRootValue
 } else {
@@ -125,7 +125,7 @@ foreach ($dataset in $selectedDatasets) {
     }
 }
 if ($missing.Count -and -not $DryRun) {
-    throw "Converted PatchSTG files are missing:`n$($missing -join "`n")"
+    throw "Converted high-dimensional traffic files are missing:`n$($missing -join "`n")"
 }
 if ($missing.Count) {
     Write-Warning "Dry-run is using unresolved converted dataset paths."
@@ -134,7 +134,7 @@ if ($missing.Count) {
 $resultDirValue = if ($ResultDir) {
     $ResultDir
 } else {
-    Get-StringSetting "RESULT_DIR" (Join-Path $projectRoot "results\patchstg_four_datasets")
+    Get-StringSetting "RESULT_DIR" (Join-Path $projectRoot "results\highdim_traffic_four_datasets")
 }
 $resultDir = if ([IO.Path]::IsPathRooted($resultDirValue)) {
     $resultDirValue
@@ -179,7 +179,7 @@ foreach ($dataset in $selectedDatasets) {
                 "--model_id", $modelId,
                 "--model", $model,
                 "--seed", "$seed",
-                "--data", "PatchSTG",
+                "--data", "HighDimTraffic",
                 "--result_data", $dataset,
                 "--root_path", $rootPath,
                 "--data_path", "flow.npy",
@@ -214,7 +214,7 @@ foreach ($dataset in $selectedDatasets) {
                 "--itr", "1",
                 "--gpu", "$Gpu",
                 "--use_amp",
-                "--des", "PatchSTGFourDatasets",
+                "--des", "HighDimTrafficFourDatasets",
                 "--result_path", $resultPath,
                 "--checkpoints", $checkpointDir
             )
@@ -244,7 +244,7 @@ foreach ($dataset in $selectedDatasets) {
 $jobs | Select-Object JobIndex, Dataset, Model, Seed, SeqLen, PredLen, BatchSize, Gpu, ModelId, Status, LogPath, Command |
     Export-Csv -LiteralPath $manifestPath -NoTypeInformation -Encoding UTF8
 
-Write-Host "PatchSTG jobs: $($jobs.Count) selected / $($selectedDatasets.Count * $selectedWindows.Count * $selectedModels.Count) total"
+Write-Host "High-dimensional traffic jobs: $($jobs.Count) selected / $($selectedDatasets.Count * $selectedWindows.Count * $selectedModels.Count) total"
 Write-Host "Datasets: $($selectedDatasets -join ', '); models: $($selectedModels.Count); windows: $($selectedWindows -join ', ')"
 Write-Host "Shard: $ShardIndex/$ShardCount; GPU: $Gpu; manifest: $manifestPath"
 
@@ -270,5 +270,5 @@ foreach ($job in $jobs) {
 if ($DryRun) {
     Write-Host "Dry-run complete. No training was started."
 } else {
-    Write-Host "Selected PatchSTG experiments complete."
+    Write-Host "Selected high-dimensional traffic experiments complete."
 }

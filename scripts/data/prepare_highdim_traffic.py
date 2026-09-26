@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Convert PatchSTG NPZ traffic arrays to memory-mappable float32 NPY files."""
+"""Convert raw high-dimensional traffic arrays to memory-mappable files."""
 
 import argparse
 import csv
@@ -344,12 +344,12 @@ def parse_args():
     parser.add_argument(
         "--source-root",
         type=Path,
-        default=script_root / "PatchSTG-main" / "data",
+        default=script_root / "traffic_reference" / "data",
     )
     parser.add_argument(
         "--output-root",
         type=Path,
-        default=script_root / "dataset" / "PatchSTG",
+        default=script_root / "dataset" / "highdim_traffic",
     )
     parser.add_argument(
         "--datasets",

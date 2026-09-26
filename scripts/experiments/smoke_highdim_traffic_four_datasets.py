@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run a lightweight real-data forward smoke test for all PatchSTG datasets."""
+"""Run a lightweight forward smoke test for the high-dimensional traffic datasets."""
 
 import argparse
 import importlib
@@ -19,7 +19,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from data_provider.data_loader import Dataset_PatchSTG
+from data_provider.data_loader import Dataset_HighDimTraffic
 
 
 DATASET_CHANNELS = {
@@ -42,7 +42,7 @@ def parse_args():
     parser.add_argument(
         "--dataset-root",
         type=Path,
-        default=PROJECT_ROOT / "dataset" / "PatchSTG",
+        default=PROJECT_ROOT / "dataset" / "highdim_traffic",
     )
     parser.add_argument(
         "--datasets",
@@ -64,7 +64,7 @@ def parse_args():
 def model_config(window, channels, args):
     return SimpleNamespace(
         task_name="long_term_forecast",
-        data="PatchSTG",
+        data="HighDimTraffic",
         seq_len=window,
         label_len=0,
         pred_len=window,
@@ -130,7 +130,7 @@ def run_case(dataset_root, dataset_name, window, model_name, args):
             f"(35040, {channels}): {manifest['flow_shape']}"
         )
 
-    dataset = Dataset_PatchSTG(
+    dataset = Dataset_HighDimTraffic(
         dataset_path,
         flag="train",
         size=[window, 0, window, channels, channels, channels],
